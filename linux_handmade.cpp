@@ -39,12 +39,19 @@ int main(int argc, char *argv[])
     }
 
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, texture_w, texture_h);
-    // pixel_map = malloc(texture_w * texture_h * 4);
-    
-    SDL_LockTexture(texture, NULL, &pixel_map, &pitch); 
-    //for (int i = 0; i < pitch; i++) {
-      
-    //}
+    void *temp_pixels = NULL;
+    SDL_LockTexture(texture, NULL, &temp_pixels, &pitch);
+    pixel_map = malloc(texture_w * texture_h * 4);
+    Uint32 *pixel;
+    // SDL_Color purple2 = 0x912CEE;
+    for (int j = 0; j < texture_h; j++)
+      for (int i = 0; i < texture_w; i++) {
+        pixel = (Uint32*)((Uint8*)pixel_map + j * pitch);
+        *pixel = 0x912CEE;
+      }
+
+
+    memcpy(temp_pixels, pixel_map, pitch * texture_h);
     // SDL_UpdateTexture(texture, 0, pixel_map, texture_w * 4);
     SDL_RenderCopy(renderer, texture, 0, 0);
     SDL_UnlockTexture(texture);
