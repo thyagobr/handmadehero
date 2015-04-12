@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
@@ -22,12 +23,13 @@ int main(int argc, char *argv[])
   SDL_GetWindowSize(window, &texture_w, &texture_h);
   SDL_Texture *texture = NULL;
   void *pixel_map = NULL;
+  int pitch;
 
   while (game_running)
   {
 
     // updating screen
-    SDL_RenderClear(renderer);
+    // SDL_RenderClear(renderer);
 
     if (pixel_map) { 
       free(pixel_map); 
@@ -37,11 +39,15 @@ int main(int argc, char *argv[])
     }
 
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, texture_w, texture_h);
-    pixel_map = malloc(texture_w * texture_h * 4);
+    // pixel_map = malloc(texture_w * texture_h * 4);
     
-    SDL_UpdateTexture(texture, 0, pixel_map, texture_w * 4);
+    SDL_LockTexture(texture, NULL, &pixel_map, &pitch); 
+    //for (int i = 0; i < pitch; i++) {
+      
+    //}
+    // SDL_UpdateTexture(texture, 0, pixel_map, texture_w * 4);
     SDL_RenderCopy(renderer, texture, 0, 0);
-
+    SDL_UnlockTexture(texture);
     SDL_RenderPresent(renderer);
 
 
