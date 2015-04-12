@@ -42,13 +42,26 @@ int main(int argc, char *argv[])
     void *temp_pixels = NULL;
     SDL_LockTexture(texture, NULL, &temp_pixels, &pitch);
     pixel_map = malloc(texture_w * texture_h * 4);
-    Uint32 *pixel;
+    Uint8 *pixel;
+    Uint8 *row = (Uint8 *) pixel_map;
     // SDL_Color purple2 = 0x912CEE;
-    for (int j = 0; j < texture_h; j++)
+    for (int j = 0; j < texture_h; j++) {
+        pixel = (Uint8*) row;
       for (int i = 0; i < texture_w; i++) {
-        pixel = (Uint32*)((Uint8*)pixel_map + j * pitch);
-        *pixel = 0x912CEE;
+        *pixel = 0xee;
+        ++pixel;
+
+        *pixel = 0x2c;
+        ++pixel;
+
+        *pixel = 0x91;
+        ++pixel;
+
+        *pixel = 0xAA;
+        ++pixel;
       }
+      row += pitch;
+    }
 
 
     memcpy(temp_pixels, pixel_map, pitch * texture_h);
