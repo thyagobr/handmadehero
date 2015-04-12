@@ -47,9 +47,9 @@ int main(int argc, char *argv[])
     Uint8 *row = (Uint8 *) pixel_map;
     // SDL_Color purple2 = 0x912CEE;
     for (int j = 0; j < texture_h; j++) {
-        pixel = (Uint8*) row;
+      pixel = (Uint8*) row;
       for (int i = 0; i < texture_w; i++) {
- 
+
         *pixel = (Uint8) i + x_offset;
         ++pixel;
 
@@ -78,26 +78,27 @@ int main(int argc, char *argv[])
     // handling events
     // could also use SDL_PollEvent
     SDL_Event event;
-    SDL_WaitEvent(&event);
-    switch (event.type)
-    {
-      case SDL_QUIT:
-        {
-          printf("shutdown!\n");
-          game_running = 0;
-        } break;
-
-      case SDL_WINDOWEVENT:
-        {
-          switch (event.window.event)
+    while (SDL_PollEvent(&event)) {
+      switch (event.type)
+      {
+        case SDL_QUIT:
           {
-            case SDL_WINDOWEVENT_SIZE_CHANGED:
-              {
-                // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
-              } break;
-          }
-        } break;
+            printf("shutdown!\n");
+            game_running = 0;
+          } break;
+
+        case SDL_WINDOWEVENT:
+          {
+            switch (event.window.event)
+            {
+              case SDL_WINDOWEVENT_SIZE_CHANGED:
+                {
+                  // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                  printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
+                } break;
+            }
+          } break;
+      }
     }
   }
 
