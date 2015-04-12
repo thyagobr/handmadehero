@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
   SDL_Texture *texture = NULL;
   void *pixel_map = NULL;
   int pitch;
+  int x_offset, y_offset = 0;
 
   while (game_running)
   {
@@ -48,16 +49,17 @@ int main(int argc, char *argv[])
     for (int j = 0; j < texture_h; j++) {
         pixel = (Uint8*) row;
       for (int i = 0; i < texture_w; i++) {
-        *pixel = 0xee;
+ 
+        *pixel = (Uint8) i + x_offset;
         ++pixel;
 
-        *pixel = 0x2c;
+        *pixel = 0;
         ++pixel;
 
-        *pixel = 0x91;
+        *pixel = (Uint8) j + y_offset;
         ++pixel;
 
-        *pixel = 0xAA;
+        *pixel = 0;
         ++pixel;
       }
       row += pitch;
@@ -69,6 +71,8 @@ int main(int argc, char *argv[])
     SDL_RenderCopy(renderer, texture, 0, 0);
     SDL_UnlockTexture(texture);
     SDL_RenderPresent(renderer);
+
+    ++x_offset;
 
 
     // handling events
