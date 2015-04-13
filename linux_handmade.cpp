@@ -1,14 +1,46 @@
 #include <SDL.h>
 
+bool game_running = true;
+SDL_Renderer *renderer;
+SDL_Texture *texture;
+int texture_w, texture_h;
+int pitch;
+void *pixel_memory;
+
+void render(int x_offset, int y_offset)
+{
+  SDL_LockTexture(texture, NULL, &pixel_memory, &pitch);
+
+  Uint32 *pixel;
+  Uint8 *row = (Uint8 *) pixel_memory;
+  // SDL_Color purple2 = 0x912CEE;
+  for (int j = 0; j < texture_h; j++) {
+    pixel = (Uint32 *) row;
+    for (int i = 0; i < texture_w; i++) {
+
+      Uint8 alpha = 0;
+      Uint8 red = j + y_offset;
+      Uint8 green = 0;
+      Uint8 blue = i + x_offset;
+
+      *pixel++ = ((alpha << 24) | (red << 16) | (green << 8) | (blue));
+
+    }
+    row += pitch;
+  }
+
+  SDL_UnlockTexture(texture);
+}
+
 int main(int argc, char *argv[])
 {
-  int game_running = 1;
 
-  if (int sdl_init_error = (SDL_Init(SDL_INIT_VIDEO) != 0))
+  if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Handmade Hero", SDL_GetError(), 0);
-    return(sdl_init_error);
+    return 1;
   }
+
   SDL_Window *window = SDL_CreateWindow("Handmade Penguin Hero",
       SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED,
@@ -16,58 +48,22 @@ int main(int argc, char *argv[])
       480,
       SDL_WINDOW_RESIZABLE); 
 
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-  SDL_SetRenderDrawColor(renderer, 127, 0, 255, 255);
-  int texture_w, texture_h;
   SDL_GetWindowSize(window, &texture_w, &texture_h);
-  SDL_Texture *texture = NULL;
-  void *pixel_map = NULL;
-  int pitch;
+
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  SDL_SetRenderDrawColor(renderer, 127, 0, 255, 255);
+
+  texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, texture_w, texture_h);
+
   int x_offset, y_offset = 0;
 
   while (game_running)
   {
 
-    // updating screen
-    // SDL_RenderClear(renderer);
+    render(x_offset, y_offset);
 
-    if (pixel_map) { 
-      free(pixel_map); 
-    }
-    if (texture) {
-      SDL_DestroyTexture(texture);
-    }
-
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, texture_w, texture_h);
-    // doing this so that i don't try to free() pixel_map, which is texture's memory
-    // it's, most likely, not even necessary
-    // might as well just use temp_pixels directly
-    void *temp_pixels = NULL;
-    SDL_LockTexture(texture, NULL, &temp_pixels, &pitch);
-    pixel_map = malloc(texture_w * texture_h * 4);
-    Uint32 *pixel;
-    Uint8 *row = (Uint8 *) pixel_map;
-    // SDL_Color purple2 = 0x912CEE;
-    for (int j = 0; j < texture_h; j++) {
-      pixel = (Uint32 *) row;
-      for (int i = 0; i < texture_w; i++) {
-
-        Uint8 alpha = 0;
-        Uint8 red = j + y_offset;
-        Uint8 green = 0;
-        Uint8 blue = i + x_offset;
-
-        *pixel++ = ((alpha << 24) | (red << 16) | (green << 8) | (blue));
-
-      }
-      row += pitch;
-    }
-
-
-    memcpy(temp_pixels, pixel_map, pitch * texture_h);
-
+    SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, 0, 0);
-    SDL_UnlockTexture(texture);
     SDL_RenderPresent(renderer);
 
     ++x_offset;
