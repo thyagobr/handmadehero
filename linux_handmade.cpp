@@ -1,5 +1,4 @@
 #include <SDL.h>
-#include <iostream>
 
 int main(int argc, char *argv[])
 {
@@ -40,6 +39,9 @@ int main(int argc, char *argv[])
     }
 
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, texture_w, texture_h);
+    // doing this so that i don't try to free() pixel_map, which is texture's memory
+    // it's, most likely, not even necessary
+    // might as well just use temp_pixels directly
     void *temp_pixels = NULL;
     SDL_LockTexture(texture, NULL, &temp_pixels, &pitch);
     pixel_map = malloc(texture_w * texture_h * 4);
@@ -67,12 +69,13 @@ int main(int argc, char *argv[])
 
 
     memcpy(temp_pixels, pixel_map, pitch * texture_h);
-    // SDL_UpdateTexture(texture, 0, pixel_map, texture_w * 4);
+
     SDL_RenderCopy(renderer, texture, 0, 0);
     SDL_UnlockTexture(texture);
     SDL_RenderPresent(renderer);
 
     ++x_offset;
+    ++y_offset;
 
 
     // handling events
@@ -94,6 +97,7 @@ int main(int argc, char *argv[])
               case SDL_WINDOWEVENT_SIZE_CHANGED:
                 {
                   // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                  SDL_GetWindowSize(window, &texture_w, &texture_h);
                   printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
                 } break;
             }
