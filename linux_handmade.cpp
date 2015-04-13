@@ -45,24 +45,20 @@ int main(int argc, char *argv[])
     void *temp_pixels = NULL;
     SDL_LockTexture(texture, NULL, &temp_pixels, &pitch);
     pixel_map = malloc(texture_w * texture_h * 4);
-    Uint8 *pixel;
+    Uint32 *pixel;
     Uint8 *row = (Uint8 *) pixel_map;
     // SDL_Color purple2 = 0x912CEE;
     for (int j = 0; j < texture_h; j++) {
-      pixel = (Uint8*) row;
+      pixel = (Uint32 *) row;
       for (int i = 0; i < texture_w; i++) {
 
-        *pixel = (Uint8) i + x_offset;
-        ++pixel;
+        Uint8 alpha = 0;
+        Uint8 red = j + y_offset;
+        Uint8 green = 0;
+        Uint8 blue = i + x_offset;
 
-        *pixel = 0;
-        ++pixel;
+        *pixel++ = ((alpha << 24) | (red << 16) | (green << 8) | (blue));
 
-        *pixel = (Uint8) j + y_offset;
-        ++pixel;
-
-        *pixel = 0;
-        ++pixel;
       }
       row += pitch;
     }
@@ -75,8 +71,6 @@ int main(int argc, char *argv[])
     SDL_RenderPresent(renderer);
 
     ++x_offset;
-    ++y_offset;
-
 
     // handling events
     // could also use SDL_PollEvent
