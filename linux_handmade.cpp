@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <iostream>
 
 bool game_running = true;
 SDL_Renderer *renderer;
@@ -17,8 +18,9 @@ void render(int x_offset, int y_offset)
   for (int j = 0; j < texture_h; j++) {
     pixel = (Uint32 *) row;
     for (int i = 0; i < texture_w; i++) {
+      x_offset = 0;
 
-      Uint8 alpha = 0;
+      Uint8 alpha = 255;
       Uint8 red = j + y_offset;
       Uint8 green = 0;
       Uint8 blue = i + x_offset;
@@ -28,12 +30,12 @@ void render(int x_offset, int y_offset)
     }
     row += pitch;
   }
-
   SDL_UnlockTexture(texture);
 }
 
 int main(int argc, char *argv[])
 {
+  int x_offset, y_offset = 0;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
@@ -44,8 +46,8 @@ int main(int argc, char *argv[])
   SDL_Window *window = SDL_CreateWindow("Handmade Penguin Hero",
       SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED,
-      640,
-      480,
+      1280,
+      720,
       SDL_WINDOW_RESIZABLE); 
 
   SDL_GetWindowSize(window, &texture_w, &texture_h);
@@ -55,7 +57,6 @@ int main(int argc, char *argv[])
 
   texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, texture_w, texture_h);
 
-  int x_offset, y_offset = 0;
 
   while (game_running)
   {
@@ -68,8 +69,6 @@ int main(int argc, char *argv[])
 
     ++x_offset;
 
-    // handling events
-    // could also use SDL_PollEvent
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       switch (event.type)
