@@ -11,14 +11,27 @@ void *pixel_memory;
 
 void render(int x_offset, int y_offset)
 {
-  SDL_LockTexture(texture, NULL, &pixel_memory, &pitch);
+  if (texture)
+  {
+    SDL_DestroyTexture(texture);
+  }
+  
+  texture = SDL_CreateTexture(renderer, 
+      SDL_PIXELFORMAT_ARGB8888, 
+      SDL_TEXTUREACCESS_STREAMING, 
+      texture_w, 
+      texture_h);
+
+  if (SDL_LockTexture(texture, NULL, &pixel_memory, &pitch) < 0) {
+    printf("Wtf? %s\n", SDL_GetError());
+  }
 
   Uint32 *pixel;
   Uint8 *row = (Uint8 *) pixel_memory;
   // SDL_Color purple2 = 0x912CEE;
-  for (int j = 0; j < texture_h; j++) {
-    pixel = (Uint32 *) row;
-    for (int i = 0; i < texture_w; i++) {
+  for (int j = 0; j < texture_h; ++j) {
+    pixel = (Uint32 *)((Uint8 *) pixel_memory + j * pitch);
+    for (int i = 0; i < texture_w; ++i) {
       x_offset = 0;
 
       Uint8 alpha = 255;
@@ -29,7 +42,6 @@ void render(int x_offset, int y_offset)
       *pixel++ = ((alpha << 24) | (red << 16) | (green << 8) | (blue));
 
     }
-    row += pitch;
   }
   SDL_UnlockTexture(texture);
 }
@@ -39,7 +51,7 @@ int main(int argc, char *argv[])
   int x_offset = 0;
   int y_offset = 0;
 
-  if (SDL_Init(SDL_INIT_VIDEO) < 0)
+  if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER) < 0)
   {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Handmade Hero", SDL_GetError(), 0);
     return 1;
@@ -52,17 +64,14 @@ int main(int argc, char *argv[])
       720,
       SDL_WINDOW_RESIZABLE); 
 
-  SDL_GetWindowSize(window, &texture_w, &texture_h);
 
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
   SDL_SetRenderDrawColor(renderer, 127, 0, 255, 255);
 
-  texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, texture_w, texture_h);
-
-
   while (game_running)
   {
 
+    SDL_GetWindowSize(window, &texture_w, &texture_h);
     render(x_offset, y_offset);
 
     SDL_RenderClear(renderer);
@@ -88,7 +97,6 @@ int main(int argc, char *argv[])
               case SDL_WINDOWEVENT_SIZE_CHANGED:
                 {
                   // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                  SDL_GetWindowSize(window, &texture_w, &texture_h);
                   printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
                 } break;
             }
