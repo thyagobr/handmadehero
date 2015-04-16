@@ -4,7 +4,8 @@
 bool game_running = true;
 SDL_Renderer *renderer;
 SDL_Texture *texture;
-int texture_w, texture_h;
+int texture_w;
+int texture_h;
 int pitch;
 void *pixel_memory;
 
@@ -35,7 +36,8 @@ void render(int x_offset, int y_offset)
 
 int main(int argc, char *argv[])
 {
-  int x_offset, y_offset = 0;
+  int x_offset = 0;
+  int y_offset = 0;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
