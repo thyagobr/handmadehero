@@ -90,10 +90,6 @@ int main(int argc, char *argv[])
     SDL_RenderCopy(renderer, texture, 0, 0);
     SDL_RenderPresent(renderer);
 
-    ++x_offset;
-    ++y_offset;
-
-
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       switch (event.type)
@@ -105,24 +101,37 @@ int main(int argc, char *argv[])
           } break;
 
         case SDL_KEYDOWN:
+        case SDL_KEYUP:
           {
-            if (!event.key.repeat) {
-              printf("button: %d\n", event.key.keysym.sym);
-              break;
+            SDL_Keycode keycode = event.key.keysym.sym;
+            printf("Got keycode: %d\n", keycode);
+            // if (!event.key.repeat) {
+              if (keycode == SDLK_d) {
+                x_offset += 10;
+              }
+              if (keycode == SDLK_a) {
+                x_offset -= 10;
+              }
+              if (keycode == SDLK_w) {
+                y_offset -= 10;
+              }
+              if (keycode == SDLK_s) {
+                y_offset += 10;
+              }
+            // }
+          } break;
 
-              case SDL_WINDOWEVENT:
-              {
-                switch (event.window.event)
+        case SDL_WINDOWEVENT:
+          {
+            switch (event.window.event)
+            {
+              case SDL_WINDOWEVENT_SIZE_CHANGED:
                 {
-                  case SDL_WINDOWEVENT_SIZE_CHANGED:
-                    {
-                      // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                      printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
-                    } break;
-                }
-              } break; // case SDL_WINDOWEVENT
-            } // non-repeat key loop
-          } // case SDL_KEYDOWN
+                  // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                  printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
+                } break;
+            }
+          } break; // case SDL_WINDOWEVENT
       } // switch (event.type)
     } // event loop
   } // game loop
