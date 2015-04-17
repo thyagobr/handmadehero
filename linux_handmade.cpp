@@ -4,6 +4,7 @@
 bool game_running = true;
 SDL_Renderer *renderer;
 SDL_Texture *texture;
+SDL_GameController *controller;
 int texture_w;
 int texture_h;
 int pitch;
@@ -15,7 +16,7 @@ void render(int x_offset, int y_offset)
   {
     SDL_DestroyTexture(texture);
   }
-  
+
   texture = SDL_CreateTexture(renderer, 
       SDL_PIXELFORMAT_ARGB8888, 
       SDL_TEXTUREACCESS_STREAMING, 
@@ -32,7 +33,6 @@ void render(int x_offset, int y_offset)
   for (int j = 0; j < texture_h; ++j) {
     pixel = (Uint32 *)((Uint8 *) pixel_memory + j * pitch);
     for (int i = 0; i < texture_w; ++i) {
-      x_offset = 0;
 
       Uint8 alpha = 255;
       Uint8 red = j + y_offset;
@@ -68,6 +68,18 @@ int main(int argc, char *argv[])
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
   SDL_SetRenderDrawColor(renderer, 127, 0, 255, 255);
 
+  for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+    if (SDL_IsGameController(i))
+    {
+      controller = SDL_GameControllerOpen(0);
+      if (controller) {
+        printf("Controller open and ready!\n");
+      } else {
+        printf("No controllers detected.\n");
+      }
+    }
+  }
+
   while (game_running)
   {
 
@@ -79,6 +91,8 @@ int main(int argc, char *argv[])
     SDL_RenderPresent(renderer);
 
     ++x_offset;
+    ++y_offset;
+
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -90,19 +104,32 @@ int main(int argc, char *argv[])
             game_running = 0;
           } break;
 
-        case SDL_WINDOWEVENT:
-          {
-            switch (event.window.event)
+        case SDL_KEYDOWN:
+          if (!event.key.repeat) {
+            printf("button: %d\n", event.key.keysym.sym);
+            break;
+
+            case SDL_WINDOWEVENT:
             {
-              case SDL_WINDOWEVENT_SIZE_CHANGED:
-                {
-                  // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                  printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
-                } break;
-            }
-          } break;
+              switch (event.window.event)
+              {
+                case SDL_WINDOWEVENT_SIZE_CHANGED:
+                  {
+                    // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                    printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
+                  } break;
+              }
+            } break;
+          }
       }
     }
+
+    bool Up = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A);
+
+    if (Up) {
+      printf("Up!\n");
+    }
+
   }
 
   SDL_DestroyWindow(window);
