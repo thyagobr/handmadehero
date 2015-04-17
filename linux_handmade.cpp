@@ -105,32 +105,27 @@ int main(int argc, char *argv[])
           } break;
 
         case SDL_KEYDOWN:
-          if (!event.key.repeat) {
-            printf("button: %d\n", event.key.keysym.sym);
-            break;
+          {
+            if (!event.key.repeat) {
+              printf("button: %d\n", event.key.keysym.sym);
+              break;
 
-            case SDL_WINDOWEVENT:
-            {
-              switch (event.window.event)
+              case SDL_WINDOWEVENT:
               {
-                case SDL_WINDOWEVENT_SIZE_CHANGED:
-                  {
-                    // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                    printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
-                  } break;
-              }
-            } break;
-          }
-      }
-    }
-
-    bool Up = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A);
-
-    if (Up) {
-      printf("Up!\n");
-    }
-
-  }
+                switch (event.window.event)
+                {
+                  case SDL_WINDOWEVENT_SIZE_CHANGED:
+                    {
+                      // SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                      printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", event.window.data1, event.window.data2);
+                    } break;
+                }
+              } break; // case SDL_WINDOWEVENT
+            } // non-repeat key loop
+          } // case SDL_KEYDOWN
+      } // switch (event.type)
+    } // event loop
+  } // game loop
 
   SDL_DestroyWindow(window);
   SDL_Quit();
