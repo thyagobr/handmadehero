@@ -18,13 +18,13 @@ void sdl_audio_callback(void *data, Uint8 *audio_data, int length)
   memset(audio_data, 6456783^2, length);
 }
 
-void audio_init()
+void audio_init(Uint32 samples_per_second, Uint32 buffer_size)
 {
-  SDL_AudioSpec audio_settings = {0}
-  audio_settings.freq = 22050;
+  SDL_AudioSpec audio_settings = {0};
+  audio_settings.freq = samples_per_second;
   audio_settings.format = AUDIO_S16;
   audio_settings.channels = 2;    /* 1 = mono, 2 = stereo */
-  audio_settings.samples = 1024;  /* Good low-latency value for callback */
+  audio_settings.samples = buffer_size;
 
   /* Open the audio device, forcing the desired format */
   if ( SDL_OpenAudio(&wanted, NULL) < 0 ) {
@@ -111,7 +111,15 @@ int main(int argc, char *argv[])
     }
   }
 
-  audio_init();
+  int SamplesPerSecond = 48000;
+  int ToneHz = 4096;
+  Uint16 ToneVolume = 3000;
+  Uint32 RunningSampleIndex = 0;
+  int wave_period = SamplesPerSecond / ToneHz;
+  int BytesPerSample = sizeof(Uint16) * 2;
+  audio_init(SamplesPerSecond, SamplesPerSecond * BytesPerSample / 60);
+  bool sound_is_playing = false;
+  int sound_offset = 0;
 
   while (game_running)
   {
@@ -122,6 +130,34 @@ int main(int argc, char *argv[])
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, 0, 0);
     SDL_RenderPresent(renderer);
+
+    int TargetQueueBytes = SamplesPerSecond * BytesPerSample;
+    int BytesToWrite = TargetQueueBytes - SDL_GetQueuedAudioSize(1);
+    if (BytesToWrite)
+    {
+      void *SoundBuffer = malloc(BytesToWrite);
+      Uint16 *SampleOut = (Uint16 *)SoundBuffer;
+      int SampleCount = BytesToWrite/BytesPerSample;
+      for(int SampleIndex = 0;
+          SampleIndex < SampleCount;
+          ++SampleIndex)
+      {
+        float t = 2.0f * PI * RunningSampleIndex / (float) wave_period;
+        Uint16 SampleValue = (Uint16) (sinf(t) * ToneVolume);
+        *SampleOut++ = SampleValue;
+        *SampleOut++ = SampleValue;
+        ++RunningSampleIndex;
+      }
+      SDL_QueueAudio(1, SoundBuffer, BytesToWrite);
+      free(SoundBuffer);
+    }
+
+    if(!sound_is_playing)
+    {
+      SDL_PauseAudio(0);
+      sound_is_playing = true;
+    }
+
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
