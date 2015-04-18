@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <time.h>
 #include <iostream>
 
 bool game_running = true;
@@ -9,6 +10,33 @@ int texture_w;
 int texture_h;
 int pitch;
 void *pixel_memory;
+SDL_AudioSpec wanted;
+
+/* Set the audio format */
+void sdl_audio_callback(void *data, Uint8 *audio_data, int length)
+{
+  memset(audio_data, 6456783^2, length);
+}
+
+void audio_init()
+{
+  SDL_AudioSpec audio_settings = {0}
+  audio_settings.freq = 22050;
+  audio_settings.format = AUDIO_S16;
+  audio_settings.channels = 2;    /* 1 = mono, 2 = stereo */
+  audio_settings.samples = 1024;  /* Good low-latency value for callback */
+
+  /* Open the audio device, forcing the desired format */
+  if ( SDL_OpenAudio(&wanted, NULL) < 0 ) {
+    fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+  }
+  else 
+  {
+    printf("Audio systems operational.\n");
+  }
+}
+
+#define PI 3.14159265
 
 void render(int x_offset, int y_offset)
 {
@@ -31,15 +59,18 @@ void render(int x_offset, int y_offset)
   Uint8 *row = (Uint8 *) pixel_memory;
   // SDL_Color purple2 = 0x912CEE;
   for (int j = 0; j < texture_h; ++j) {
+    int ymess = j - (texture_h / 2);
     pixel = (Uint32 *)((Uint8 *) pixel_memory + j * pitch);
     for (int i = 0; i < texture_w; ++i) {
+      int xmess = i - (texture_w / 2);
 
       Uint8 alpha = 255;
-      Uint8 red = j + y_offset;
+      Uint8 red = sin(j*PI/180);
       Uint8 green = 0;
-      Uint8 blue = i + x_offset;
+      Uint8 blue = sin(i*PI/180);
 
-      *pixel++ = ((alpha << 24) | (red << 16) | (green << 8) | (blue));
+      // *pixel++ = ((alpha << 24) | (red << 16) | (green << 8) | (blue));
+      *pixel++ = (ymess * xmess) & 5 * 128;
 
     }
   }
@@ -80,6 +111,8 @@ int main(int argc, char *argv[])
     }
   }
 
+  audio_init();
+
   while (game_running)
   {
 
@@ -106,18 +139,18 @@ int main(int argc, char *argv[])
             SDL_Keycode keycode = event.key.keysym.sym;
             printf("Got keycode: %d\n", keycode);
             // if (!event.key.repeat) {
-              if (keycode == SDLK_d) {
-                x_offset += 10;
-              }
-              if (keycode == SDLK_a) {
-                x_offset -= 10;
-              }
-              if (keycode == SDLK_w) {
-                y_offset -= 10;
-              }
-              if (keycode == SDLK_s) {
-                y_offset += 10;
-              }
+            if (keycode == SDLK_d) {
+              x_offset += 10;
+            }
+            if (keycode == SDLK_a) {
+              x_offset -= 10;
+            }
+            if (keycode == SDLK_w) {
+              y_offset -= 10;
+            }
+            if (keycode == SDLK_s) {
+              y_offset += 10;
+            }
             // }
           } break;
 
