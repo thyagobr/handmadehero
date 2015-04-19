@@ -12,12 +12,6 @@ int pitch;
 void *pixel_memory;
 SDL_AudioSpec wanted;
 
-/* Set the audio format */
-void sdl_audio_callback(void *data, Uint8 *audio_data, int length)
-{
-  memset(audio_data, 6456783^2, length);
-}
-
 void audio_init(Uint32 samples_per_second, Uint32 buffer_size)
 {
   SDL_AudioSpec audio_settings = {0};
