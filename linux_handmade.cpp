@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
   }
 
   int SamplesPerSecond = 48000;
-  int ToneHz = 4096;
+  int ToneHz = 256;
   Uint16 ToneVolume = 3000;
   Uint32 RunningSampleIndex = 0;
   int wave_period = SamplesPerSecond / ToneHz;
@@ -114,6 +114,8 @@ int main(int argc, char *argv[])
   audio_init(SamplesPerSecond, SamplesPerSecond * BytesPerSample / 60);
   bool sound_is_playing = false;
   int sound_offset = 0;
+  Uint64 performance_count_freq = SDL_GetPerformanceFrequency();
+  Uint64 last_counter = SDL_GetPerformanceCounter();
 
   while (game_running)
   {
@@ -197,6 +199,14 @@ int main(int argc, char *argv[])
           } break; // case SDL_WINDOWEVENT
       } // switch (event.type)
     } // event loop
+
+    Uint64 end_counter = SDL_GetPerformanceCounter();
+    Uint32 delta_counter = (Uint32) end_counter - last_counter;
+    Uint32 ms_per_counter = ((delta_counter * 1000) / performance_count_freq);
+    Uint32 fps = performance_count_freq / delta_counter;
+    printf("ms per counter: %d (delta_counter: %d); frames per second: %d\n", ms_per_counter, delta_counter, fps);
+    last_counter = end_counter;
+
   } // game loop
 
   SDL_DestroyWindow(window);
