@@ -1,6 +1,6 @@
 #include <SDL.h>
 #include <time.h>
-#include <iostream>
+#include <x86intrin.h>
 
 bool game_running = true;
 SDL_Renderer *renderer;
@@ -12,6 +12,7 @@ int pitch;
 void *pixel_memory;
 SDL_AudioSpec wanted;
 Uint64 last_counter;
+Uint64 last_cycle_count;
 
 void audio_init(Uint32 samples_per_second, Uint32 buffer_size)
 {
@@ -122,6 +123,7 @@ int main(int argc, char *argv[])
 
     SDL_GetWindowSize(window, &texture_w, &texture_h);
     last_counter = SDL_GetPerformanceCounter();
+    last_cycle_count = _rdtsc();
     render(x_offset, y_offset);
 
     SDL_RenderClear(renderer);
@@ -206,6 +208,11 @@ int main(int argc, char *argv[])
     float ms_per_counter = (((float)delta_counter * 1000.0f) / (float)performance_count_freq);
     float fps = (float) performance_count_freq / (float) delta_counter;
     printf("ms per counter: %f; frames per second: %f\n", ms_per_counter, fps);
+
+    Uint64 end_cycle_count = _rdtsc();
+    Uint64 number_of_cycles = end_cycle_count - last_cycle_count;
+    double megacycles_per_frame = ((double) number_of_cycles / (1000.0f * 1000.0f));
+
     last_counter = end_counter;
 
   } // game loop
