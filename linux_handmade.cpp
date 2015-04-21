@@ -11,6 +11,7 @@ int texture_h;
 int pitch;
 void *pixel_memory;
 SDL_AudioSpec wanted;
+Uint64 last_counter;
 
 void audio_init(Uint32 samples_per_second, Uint32 buffer_size)
 {
@@ -44,7 +45,7 @@ void render(int x_offset, int y_offset)
       SDL_TEXTUREACCESS_STREAMING, 
       texture_w, 
       texture_h);
-
+  
   if (SDL_LockTexture(texture, NULL, &pixel_memory, &pitch) < 0) {
     printf("Wtf? %s\n", SDL_GetError());
   }
@@ -115,12 +116,12 @@ int main(int argc, char *argv[])
   bool sound_is_playing = false;
   int sound_offset = 0;
   Uint64 performance_count_freq = SDL_GetPerformanceFrequency();
-  Uint64 last_counter = SDL_GetPerformanceCounter();
 
   while (game_running)
   {
 
     SDL_GetWindowSize(window, &texture_w, &texture_h);
+    last_counter = SDL_GetPerformanceCounter();
     render(x_offset, y_offset);
 
     SDL_RenderClear(renderer);
@@ -202,9 +203,9 @@ int main(int argc, char *argv[])
 
     Uint64 end_counter = SDL_GetPerformanceCounter();
     Uint32 delta_counter = (Uint32) end_counter - last_counter;
-    Uint32 ms_per_counter = ((delta_counter * 1000) / performance_count_freq);
-    Uint32 fps = performance_count_freq / delta_counter;
-    printf("ms per counter: %d (delta_counter: %d); frames per second: %d\n", ms_per_counter, delta_counter, fps);
+    float ms_per_counter = (((float)delta_counter * 1000.0f) / (float)performance_count_freq);
+    float fps = (float) performance_count_freq / (float) delta_counter;
+    printf("ms per counter: %f; frames per second: %f\n", ms_per_counter, fps);
     last_counter = end_counter;
 
   } // game loop
